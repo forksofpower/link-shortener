@@ -1,6 +1,14 @@
-@LinkShortener.API_HostAddress = http://localhost:5162
+@host_address= http://localhost:5162
 
-GET {{LinkShortener.API_HostAddress}}/weatherforecast/
+POST {{host_address}}/api/shorten?longUrl=https%3A%2F%2Fen.wikipedia.org%2Fwiki%2FCF_Uni%25C3%25B3n_Viera
 Accept: application/json
 
-###
+> {% 
+    var json = response.body;
+    client.global.set("shortCode", json.shortCode);
+
+%}
+
+#####
+# @no-redirect
+GET {{host_address}}/{{shortCode}}
