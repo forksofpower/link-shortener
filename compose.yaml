@@ -1,0 +1,7 @@
+﻿services:
+  linkshortener.api:
+    image: linkshortener.api
+    build:
+      context: .
+      dockerfile: LinkShortener.API/Dockerfile
+
