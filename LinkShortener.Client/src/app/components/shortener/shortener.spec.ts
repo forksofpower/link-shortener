@@ -34,20 +34,25 @@ describe('Shortener Component', () => {
     mockUrlService.shortenUrl.mockReturnValue(of({ shortCode: 'abc1234' }));
 
     // type into the input
-    const inputEl = fixture.debugElement.query(By.css('input')).nativeElement;
+    const inputEl = getElementWithSelector(fixture, 'input');
     inputEl.value = 'https://wikipedia.org';
     inputEl.dispatchEvent(new Event('input'));
     fixture.detectChanges();
 
     // click the button
-    const buttonEl = fixture.debugElement.query(By.css('button')).nativeElement;
+    const buttonEl = getElementWithSelector(fixture, 'button');
     buttonEl.click();
     fixture.detectChanges();
 
     // assertions
     expect(mockUrlService.shortenUrl).toHaveBeenCalled();
 
-    const linkEl = fixture.debugElement.query(By.css('a')).nativeElement;
+    const linkEl = getElementWithSelector(fixture, 'a');
     expect(linkEl.textContent).toContain('abc1234');
   });
 });
+
+// helpers
+function getElementWithSelector(cf: ComponentFixture<Shortener>, selector: string) {
+  return cf.debugElement.query(By.css(selector)).nativeElement;
+}
