@@ -4,4 +4,10 @@
     build:
       context: .
       dockerfile: LinkShortener.API/Dockerfile
+      
+  linkshortener.client:
+    image: linkshortener.client
+    build:
+      context: .
+      dockerfile: LinkShortener.Client/Dockerfile
 
