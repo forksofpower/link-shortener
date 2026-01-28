@@ -1,41 +1,68 @@
+using LinkShortener.API;
+using Microsoft.EntityFrameworkCore;
+using NanoidDotNet;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
+
+// Use in-memory db for now
+builder.Services.AddDbContext<AppDbContext>(opt => opt.UseInMemoryDatabase("UrlsDb"));
+
+// Create CORS Policies
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngular",
+        policy => policy.WithOrigins("http://localhost:4200")
+                                     .AllowAnyMethod()
+                                     .AllowAnyHeader());
+});
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Middleware
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+app.UseCors("AllowAngular");
 
-app.UseHttpsRedirection();
+// Endpoints
 
-var summaries = new[]
+// Create and store mapping between url and short code
+app.MapPost("/api/shorten", async (AppDbContext db, string longUrl) =>
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+    // Validate input
+    if (!Uri.TryCreate(longUrl, UriKind.Absolute, out _))
+        return Results.BadRequest("Invalid URL format");
+    
+    // Generate Unique ID
+    var code = await Nanoid.GenerateAsync(size: 7);
+    
+    var mapping = new UrlMapping { ShortCode = code, LongUrl = longUrl };
+    
+    
+    db.UrlMappings.Add(mapping);
+    await db.SaveChangesAsync();
+    
+    return Results.Ok( new { ShortCode = code , LongUrl = longUrl });
+});
 
-app.MapGet("/weatherforecast", () =>
-    {
-        var forecast = Enumerable.Range(1, 5).Select(index =>
-                new WeatherForecast
-                (
-                    DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                    Random.Shared.Next(-20, 55),
-                    summaries[Random.Shared.Next(summaries.Length)]
-                ))
-            .ToArray();
-        return forecast;
-    })
-    .WithName("GetWeatherForecast");
+// Redirect to url based on short code
+app.MapGet("/{code}", async (AppDbContext db, string code) =>
+{
+    var mapping = await db.UrlMappings.FirstOrDefaultAsync(m => m.ShortCode == code);
+
+    return mapping is null
+        ? Results.NotFound()
+        : Results.Redirect(mapping.LongUrl);
+});
 
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+// Only for tests
+public partial class Program
 {
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 }
