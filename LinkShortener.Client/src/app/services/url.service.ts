@@ -13,7 +13,7 @@ export class UrlService {
     // pass longUrl as query param
     return this.http.post<{ shortCode: string }>(
       `${this.apiUrl}?longUrl=${encodeURIComponent(longUrl)}`,
-      {}
+      {} // empty payload for post request
     )
   }
 }

@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { UrlService } from '../../services/url';
+import { UrlService } from '../../services/url.service';
 
 @Component({
   selector: 'app-shortener',
