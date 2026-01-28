@@ -1,10 +1,11 @@
 import { Component, signal } from '@angular/core';
+import {Shortener} from './components/shortener/shortener';
 
 @Component({
   selector: 'app-root',
-  imports: [],
-  templateUrl: './app.html',
-  styleUrl: './app.css'
+  standalone: true,
+  imports: [Shortener],
+  template: `<app-shortener></app-shortener>`
 })
 export class App {
   protected readonly title = signal('LinkShortener.Client');
